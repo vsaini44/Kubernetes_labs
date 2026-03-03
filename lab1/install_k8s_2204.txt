@@ -1,3 +1,14 @@
+set -e
+
+ROLE=$1
+
+if [[ "$ROLE" != "master" && "$ROLE" != "worker" ]]; then
+  echo "Usage: sudo bash filename [master|worker]"
+  exit 1
+fi
+
+echo " ========= Kubernetes 1.28 Installation Starting ========="
+
 # run these commands on all machines
 export VERSION=1.28
 export OS=xUbuntu_22.04
@@ -46,10 +57,9 @@ sudo sysctl --system
 
 #####################################################################################
 
-#Run the following sets of commands on master
+#Setting up the control plane
 
-
-#on master
+if [ "$ROLE" == "master" ]; then
 
 kubeadm init >> cluster_initialized.txt
 mkdir /root/.kube
@@ -59,4 +69,14 @@ cp /etc/kubernetes/admin.conf /root/.kube/config
 curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml -O
 kubectl apply -f calico.yaml
 systemctl restart kubelet.service
+echo "Cluster initialization successfully ==== "
+echo "Run this command on worker nodes to join:"
 kubeadm token create --print-join-command
+
+else 
+echo "===== Worker Node Setup Complete ====="
+  echo "Now run the join command provided by master."
+fi
+
+echo "===== Installation Completed ====="
+
