@@ -19,7 +19,7 @@ spec:
 
     - name: cont2 
       image: memcached
-      imagePullPolicy: IfNotPresnet
+      imagePullPolicy: IfNotPresent
       volumeMounts:
         - name: vol1
           mountPath: /cont2data
