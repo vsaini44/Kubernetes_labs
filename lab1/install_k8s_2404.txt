@@ -13,7 +13,8 @@ echo "===== Kubernetes 1.35 Installation Starting ====="
 
 export KUBERNETES_VERSION=v1.35
 export CRIO_VERSION=v1.35
-export OS=xUbuntu_24.04
+#export OS=xUbuntu_24.04
+export OS=xUbuntu_22.04
 
 echo "===== Cleaning Old Configurations ====="
 rm -rf /etc/apt/sources.list.d/devel:kubic:* || true
