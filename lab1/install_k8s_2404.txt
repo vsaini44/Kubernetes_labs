@@ -68,7 +68,7 @@ if [ "$ROLE" == "master" ]; then
 
   echo "===== Initializing Kubernetes Control Plane ====="
 
-  kubeadm init
+  kubeadm init >> cluster_install.txt
 
   mkdir -p $HOME/.kube
   cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
