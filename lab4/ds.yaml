@@ -1,17 +1,17 @@
 apiVersion: apps/v1
-kind: ReplicaSet
+kind: DaemonSet
 
 Metadata:
-  name: nginx-rs
+  name: nginx-ds
 spec:
- replicas: 3
+
  selector:
    matchLabels:
-     app: rs-web
+     app: ds-web
  template:
    metadata:
      labels:
-       app: rs-web
+       app: ds-web
    spec:
      containers:
      - name: nginx
