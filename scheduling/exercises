@@ -1,0 +1,69 @@
+
+Question 1: Your cluster has 2 nodes. The team wants certain pods to run only on a specific node — like pinning a workload to a dedicated worker.
+Tasks:
+-> Check your existing nodes and their labels using kubectl get nodes --show-labels
+-> Label node-1 with hardware=standard and node-2 with hardware=high-memory
+-> Create a pod named data-processor using image nginx with nodeSelector targeting hardware=high-memory
+-> Verify it landed on node-2 using kubectl get pods -o wide
+-> Create a second pod named web-server targeting hardware=standard — verify it lands on node-1
+-> Now create a pod with nodeSelector: hardware=gpu (label that doesn't exist on any node) — observe what happens and explain why it stays Pending
+ 
+
+
+Question 2: You have 2 nodes — one labeled as zone=east and one as zone=west. You need to deploy workloads with both hard and soft placement rules.
+
+Tasks:
+-> Label node-1 as zone=east and disk=ssd
+-> Label node-2 as zone=west and disk=hdd
+-> Create a deployment named web-app with 4 replicas using requiredDuringSchedulingIgnoredDuringExecution — pod must run in zone=east only
+-> Observe — all 4 replicas land on node-1 since node-2 doesn't match the required rule
+-> Now create another deployment named cache-app with preferredDuringSchedulingIgnoredDuringExecution preferring disk=ssd with weight 80
+-> Observe how pods distribute across both nodes since it is a preference not a hard rule
+-> Remove the zone=east label from node-1 while web-app pods are running — explain what IgnoredDuringExecution means by observing that existing pods are not evicted
+-> Try scheduling a new pod with the required rule — observe it goes Pending now
+
+
+Question 3: You want node-2 reserved exclusively for production critical workloads. Regular pods should never land there unless they explicitly tolerate it.
+
+Tasks:
+-> Taint node-2 with env=prod:NoSchedule
+-> Deploy a regular nginx deployment with 6 replicas — confirm all pods land only on node-1
+-> Create a pod named prod-app with the correct toleration for env=prod:NoSchedule — verify it can be scheduled on node-2
+-> Now change the taint on node-2 to env=prod:NoExecute
+-> Observe what happens to existing pods running on node-2 that don't have the toleration — they get evicted
+-> Add tolerationSeconds: 120 to a pod tolerating the NoExecute taint — explain the delayed eviction behavior
+-> Remove the taint from node-2 completely — observe pods reschedule freely again
+ 
+
+############ Example Topology Spread Constraint ###########
+apiVersion: apps/v1
+kind: Deployment
+ 
+metadata:
+  name: dep1
+ 
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: webserver
+
+  template:
+    metadata:
+      labels:
+        app: webserver
+
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: webserver
+
+      containers:
+        - name: cont1
+          image: httpd:2.4
+
+ 
